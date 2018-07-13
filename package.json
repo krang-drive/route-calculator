@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/krang-drive/route-calculator#readme",
   "dependencies": {
-    "express": "^4.16.3"
+    "express": "^4.16.3",
+    "node-rest-client": "^3.1.0"
   }
 }
