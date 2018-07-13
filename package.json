@@ -1,0 +1,23 @@
+{
+  "name": "route-calculator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo true"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/krang-drive/route-calculator.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/krang-drive/route-calculator/issues"
+  },
+  "homepage": "https://github.com/krang-drive/route-calculator#readme",
+  "dependencies": {
+    "express": "^4.16.3"
+  }
+}
