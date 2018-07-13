@@ -2,7 +2,9 @@ var express = require('express');
 var app = express();
 var port = process.env.PORT || 8080;
 var bodyParser = require('body-parser');
-var client = require('node-rest-client');
+var Client = require('node-rest-client').Client;
+ 
+var client = new Client();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -66,37 +68,46 @@ function calculateRoute(packagesChunk, facilityLocation, facilityId) {
 	
 	var deliveryLocations = []
 	
-	for(var i = 0; i < packagesCount; i++) {
+	for(var i = 0; i < packagesChunk; i++) {
 		var package = packagesChunk[i];
 		var deliveryLocation = package.deliveryLocation;
 		deliveryLocations.push(deliveryLocation);
 	}
 	
-	var googleDirectionsRequest = "https://maps.googleapis.com/maps/api/directions/json?origin="+facilityLocation+"&destination="+facilityLocation+"&waypoints=optimize:true"+deliveryLocations.join("|")+"&key="+apiKey;
+	var googleDirectionsRequest = "https://maps.googleapis.com/maps/api/directions/json?origin="+facilityLocation+"&destination="+facilityLocation+"&optimizeWaypoints=waypoints"+deliveryLocations.join("|")+"&key="+apiKey;
 	
 	var directions = "";
-	client.get(googleDirectionsRequest, function(data, response) {
+	
+	console.log("Google directions request URL: " + googleDirectionsRequest);
+	
+	return client.get(googleDirectionsRequest, function(data, response) {
+		console.log("data= " + data);
 		directions = data;
+		var indexOrder = directions.routes.waypoint_order;
+		var orderedLocations = [];
+		orderedLocations.push(facilityLocation);
+		if(!(Arrays.isArray(indexOrder) && !indexOrder.length))
+			for(var o = 0; o < indexOrder; o++)
+				orderedLocations.push(deliveryLocations[o]);
+		else {
+			orderedLocations = deliveryLocations;
+		}
+		orderedLocations.push(facilityLocation);
+		
+		var googleMapsUrl = "https://www.google.com/maps/dir/"+orderedLocations.join("/")+"/";
+		var routeId = Math.random()*1000;
+		console.log("Route id is "+ routeId);
+		var routeResult = {
+			driverId: "-1",
+			facilityId: facilityId,
+			routeId: Math.random()*1000,
+			googleMapsUrl: googleMapsUrl,
+			bounty: 42
+		};
+		return routeResult;
 	});
 	
-	var indexOrder = directions.routes.waypoint_order;
-	var orderedLocations = [];
-	orderedLocations.push(facilityLocation);
-	for(var o = 0; o < indexOrder; o++)
-		orderedLocations.push(deliveryLocations[o]);
-	orderedLocations.push(facilityLocation);
 	
-	var googleMapsUrl = "https://www.google.com/maps/dir/"+orderedLocations.join("/")+"/";
-	var routeId = Math.random()*1000;
-	console.log("Route id is "+ routeId);
-	var routeResult = {
-		driverId: "-1",
-		facilityId: facilityId,
-		routeId: Math.random()*1000,
-		googleMapsUrl: googleMapsUrl,
-		bounty: 42
-	};
-	return routeResult;
 }
 
 app.listen(port);
