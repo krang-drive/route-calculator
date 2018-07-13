@@ -2,8 +2,8 @@ var express = require('express');
 var app = express();
 var port = process.env.PORT || 8080;
 var bodyParser = require('body-parser');
-var client = require('node-rest-client');
-
+var client = require('sync-rest-client');
+ 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -26,8 +26,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
  *	]
  * }
  * */
+app.get('/', function(req, res) {
+	console.log("hello")
+});
+ 
 app.post('/api', function(req, res) {
-	var facilityId = req.body.facility.facilityId;
+	/* var facilityId = req.body.facility.facilityId;
 	var facilityLocation = req.body.facility.facilityLocation;
 	var packages = req.body.packages;
 	
@@ -43,7 +47,9 @@ app.post('/api', function(req, res) {
 			packagesChunk.push(packages[i]);
 		}
 		else {
-			routes.push(calculateRoute(packagesChunk, facilityLocation, facilityId));
+			console.log("before");
+			routes.push(calculateRoute(packagesChunk, facilityLocation, facilityId)[0]);
+			console.log("after");
 			chunkIndex = 0;
 			packagesChunk = [];
 		}
@@ -51,42 +57,57 @@ app.post('/api', function(req, res) {
 	
 	// Check for the last chunk < 8 packages
 	if (Array.isArray(packagesChunk) && packagesChunk.length) {
-		routes.push(calculateRoute(packagesChunk, facilityLocation, facilityId))
+		routes.push(calculateRoute(packagesChunk, facilityLocation, facilityId)[0])
 	}
 	var result = {
 		deliveryRoutes: routes,
 		facilityId: facilityId
 	};
-	console.log("Result: " + result)
-	res.send(result);
+	
+	console.log("Result: " + JSON.stringify(result)) */
+	
+	var routeResult = {
+		deliveryRoutes: [
+			{
+				driverId: "-1",
+				facilityId: 4,
+				routeId: Math.random()*1000,
+				googleMapsLink: "https://www.google.com/maps/dir/340+MacArthur+Blvd,+Mahwah,+NJ+07430/UPS+Innovation+Center,+Parsippany-Troy+Hills,+NJ/The+UPS+Store,+Rockaway,+NJ/123+South+Main+Street,+Lodi,+NJ/340+MacArthur+Boulevard,+Mahwah,+NJ/",
+				bounty: 42
+			},
+			{
+				driverId: "-1",
+				facilityId: 4,
+				routeId: Math.random()*1000,
+				googleMapsLink: "https://www.google.com/maps/dir/340+MacArthur+Blvd,+Mahwah,+NJ+07430/UPS+Innovation+Center,+Parsippany-Troy+Hills,+NJ/The+UPS+Store,+Rockaway,+NJ/123+South+Main+Street,+Lodi,+NJ/340+MacArthur+Boulevard,+Mahwah,+NJ/",
+				bounty: 42
+			}
+		]
+	};
+	
+	res.send(routeResult);
 });
 
-function calculateRoute(packagesChunk, facilityLocation, facilityId) {
+/* function calculateRoute(packagesChunk, facilityLocation, facilityId) {
+	console.log("during");
 	var apiKey = "AIzaSyBINdf7SLAlb6MwSMGEhYaRTgAcSet_Qno"
 	
 	var deliveryLocations = []
 	
-	for(var i = 0; i < packagesCount; i++) {
-		var package = packagesChunk[i];
-		var deliveryLocation = package.deliveryLocation;
+	console.log("Packages chunk: " + JSON.stringify(packagesChunk));
+	
+	for(var i = 0; i < packagesChunk; i++) {
+		var pkg = packagesChunk[i];
+		var deliveryLocation = pkg.deliveryLocation;
 		deliveryLocations.push(deliveryLocation);
 	}
 	
-	var googleDirectionsRequest = "https://maps.googleapis.com/maps/api/directions/json?origin="+facilityLocation+"&destination="+facilityLocation+"&waypoints=optimize:true"+deliveryLocations.join("|")+"&key="+apiKey;
+	console.log("Delivery locations: " + deliveryLocations.join());
 	
-	var directions = "";
-	client.get(googleDirectionsRequest, function(data, response) {
-		directions = data;
-	});
+	var googleDirectionsRequest = "https://maps.googleapis.com/maps/api/directions/json?origin="+facilityLocation+"&destination="+facilityLocation+"&optimizeWaypoints=waypoints"+deliveryLocations.join("|")+"&key="+apiKey;
 	
-	var indexOrder = directions.routes.waypoint_order;
-	var orderedLocations = [];
-	orderedLocations.push(facilityLocation);
-	for(var o = 0; o < indexOrder; o++)
-		orderedLocations.push(deliveryLocations[o]);
-	orderedLocations.push(facilityLocation);
-	
-	var googleMapsUrl = "https://www.google.com/maps/dir/"+orderedLocations.join("/")+"/";
+	var googleMapsUrl = "https://www.google.com/maps/dir/"+"340 Macarthur Boulevard, Mahwah, NJ/"+deliveryLocations.join("/")+"340 Macarthur Boulevard, Mahwah, NJ"+"/";
+	console.log("URL: " + googleMapsUrl);
 	var routeId = Math.random()*1000;
 	console.log("Route id is "+ routeId);
 	var routeResult = {
@@ -96,8 +117,10 @@ function calculateRoute(packagesChunk, facilityLocation, facilityId) {
 		googleMapsUrl: googleMapsUrl,
 		bounty: 42
 	};
-	return routeResult;
-}
+	
+	console.log("Route result:" + JSON.stringify(routeResult));
+	return routeResult;	
+} */
 
 app.listen(port);
 
