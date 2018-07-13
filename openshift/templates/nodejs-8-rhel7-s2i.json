@@ -2,22 +2,21 @@
     "kind": "Template",
     "apiVersion": "v1",
     "metadata": {
-        "name": "python-36-rhel7-s2i",
+        "name": "nodejs-8-rhel7-s2i",
         "annotations": {
-            "openshift.io/display-name": "Python 3.6 S2I",
-            "description": "A Python application",
-            "tags": "python, python3, python36",
-            "iconClass": "icon-python",
-            "template.openshift.io/long-description": "This template defines resources needed to develop a python application, including a build configuration and application deployment configuration. It does includes a database.",
+            "openshift.io/display-name": "Node.js 8 S2I",
+            "description": "A Node.js application",
+            "tags": "node, nodejs, node8, node.js",
+            "iconClass": "icon-nodejs",
+            "template.openshift.io/long-description": "This template defines resources needed to develop a NodeJS application, including a build configuration and application deployment configuration. It does includes a database.",
             "template.openshift.io/provider-display-name": "UPS"
         }
     },
     "message": "The following service(s) have been created in your project: ${COMPONENT_NAME}.",
     "labels": {
-        "template": "python-36-rhel7-s2i"
+        "template": "nodejs-8-rhel7-s2i"
     },
-    "objects": [
-        {
+    "objects": [{
             "kind": "Service",
             "apiVersion": "v1",
             "metadata": {
@@ -30,13 +29,11 @@
                 }
             },
             "spec": {
-                "ports": [
-                    {
-                        "name": "web",
-                        "port": 8080,
-                        "targetPort": 8080
-                    }
-                ],
+                "ports": [{
+                    "name": "web",
+                    "port": 8080,
+                    "targetPort": 8080
+                }],
                 "selector": {
                     "name": "${COMPONENT_NAME}"
                 }
@@ -105,9 +102,12 @@
                         "from": {
                             "kind": "ImageStreamTag",
                             "namespace": "krang",
-                            "name": "python-36-rhel7:latest"
+                            "name": "nodejs-8-rhel7:latest"
                         },
-                        "env": []
+                        "env": [{
+                            "name": "NODE_ENV",
+                            "value": "development"
+                        }]
                     }
                 },
                 "output": {
@@ -126,8 +126,7 @@
                         "memory": "${BUILD_MEM_LIMIT}"
                     }
                 },
-                "triggers": [
-                    {
+                "triggers": [{
                         "type": "ImageChange"
                     },
                     {
@@ -135,7 +134,7 @@
                     }
                 ],
                 "postCommit": {
-                    "script": "echo true"
+                    "script": "npm test"
                 }
             }
         },
@@ -155,8 +154,7 @@
                 "strategy": {
                     "type": "Rolling"
                 },
-                "triggers": [
-                    {
+                "triggers": [{
                         "type": "ImageChange",
                         "imageChangeParams": {
                             "automatic": true,
@@ -185,59 +183,62 @@
                         }
                     },
                     "spec": {
-                        "containers": [
-                            {
-                                "name": "${COMPONENT_NAME}",
-                                "image": "${COMPONENT_NAME}:latest",
-                                "ports": [
-                                    {
-                                        "containerPort": 8080
-                                    }
-                                ],
-                                "readinessProbe": {
-                                    "tcpSocket": {
-                                        "port": 8080
-                                    },
-                                    "initialDelaySeconds": "${READINESS_DELAY}",
-                                    "timeoutSeconds": 10
+                        "containers": [{
+                            "name": "${COMPONENT_NAME}",
+                            "image": "${COMPONENT_NAME}:latest",
+                            "ports": [{
+                                "containerPort": 8080
+                            }],
+                            "readinessProbe": {
+                                "tcpSocket": {
+                                    "port": 8080
                                 },
-                                "livenessProbe": {
-                                    "tcpSocket": {
-                                        "port": 8080
-                                    },
-                                    "initialDelaySeconds": "${LIVENESS_DELAY}",
-                                    "timeoutSeconds": 10
+                                "initialDelaySeconds": "${READINESS_DELAY}",
+                                "timeoutSeconds": 10
+                            },
+                            "livenessProbe": {
+                                "tcpSocket": {
+                                    "port": 8080
                                 },
-                                "env": [
-                                    {
-                                        "name": "OPENSHIFT_CLUSTER_HOST",
-                                        "value": "master-paas-dev-njrar-01.ams1907.com"
-                                    }
-                                ],
-                                "resources": {
-                                    "requests": {
-                                        "cpu": "${DEPLOY_CPU_REQUEST}",
-                                        "memory": "${DEPLOY_MEM_REQUEST}"
-                                    },
-                                    "limits": {
-                                        "cpu": "${DEPLOY_CPU_LIMIT}",
-                                        "memory": "${DEPLOY_MEM_LIMIT}"
-                                    }
+                                "initialDelaySeconds": "${LIVENESS_DELAY}",
+                                "timeoutSeconds": 10
+                            },
+                            "env": [
+                                {
+                                    "name": "OPENSHIFT_CLUSTER_HOST",
+                                    "value": "master-paas-dev-njrar-01.ams1907.com"
+                                },
+                                {
+                                    "name": "APM_ENABLED",
+                                    "value": "false"
+                                },
+                                {
+                                    "name": "DEV_MODE",
+                                    "value": "true"
+                                }
+                            ],
+                            "resources": {
+                                "requests": {
+                                    "cpu": "${DEPLOY_CPU_REQUEST}",
+                                    "memory": "${DEPLOY_MEM_REQUEST}"
+                                },
+                                "limits": {
+                                    "cpu": "${DEPLOY_CPU_LIMIT}",
+                                    "memory": "${DEPLOY_MEM_LIMIT}"
                                 }
                             }
-                        ]
+                        }]
                     }
                 }
             }
         }
     ],
-    "parameters": [
-        {
+    "parameters": [{
             "name": "COMPONENT_NAME",
             "displayName": "Microservice Name",
             "description": "The name assigned to all of the frontend objects defined in this template.",
             "required": true,
-            "value": "python-example"
+            "value": "nodejs-example"
         },
         {
             "name": "SOURCE_REPOSITORY_URL",
@@ -261,7 +262,7 @@
         {
             "name": "APPLICATION_DOMAIN",
             "displayName": "Application Hostname",
-            "description": "The exposed hostname that will route to the Python service, if left blank a value will be defaulted.",
+            "description": "The exposed hostname that will route to the Node.js service, if left blank a value will be defaulted.",
             "value": ""
         },
         {
